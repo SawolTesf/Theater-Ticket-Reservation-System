@@ -9,6 +9,11 @@ import java.io.PrintStream;
 import java.lang.Exception;
 
 public class Main {
+
+    public static void menu(){
+        System.out.println("1.\tReserve Seats\n2\tExit");
+    }
+    
     public static void main(String[] args) {
 
         char[][] auditorium = new char[10][26];
@@ -48,8 +53,7 @@ public class Main {
             System.exit(0);
         }
 
-            System.out.println(col + " " + row);
-            System.out.println(adultTickets + " " + childTickets + " " + seniorTickets);
+
 
 
         scnr.close();
