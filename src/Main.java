@@ -42,6 +42,24 @@ public class Main {
         }
         return -1; // This line should never be reached
     }
+
+    public static boolean isAvailable(int userRow, int userAdultTickets, int userChildTickets, int userSeniorTickets, char[][] auditorium, char userCharLet){
+        int startSeat = userCharLet - 'A';
+        int endSeat = startSeat + userAdultTickets + userChildTickets + userSeniorTickets;
+
+        for(int i = startSeat; i < endSeat; i++){
+            if(auditorium[userRow][i] != '.'){
+                return false;
+            }
+        }
+        return true; // If the seats are available
+
+    }
+    // function to output the updated auditorium to A1.txt and output total sales and tickets
+    public static void exit(){
+        System.out.println("Thank you for using the program"); // placeholder
+        System.exit(0);
+    }
     
 
     public static void main(String[] args) {
@@ -99,7 +117,7 @@ public class Main {
         while(choice != 2){
             menu();
             choice = scnr.nextInt();
-            if(choice == 2) continue;
+            if(choice == 2) exit();
             outputAuditorium(row, col, auditorium, colLetter);
             
             userRow = getValidInput(scnr, "Enter row: ", 1, row); // Get the row number
@@ -119,8 +137,15 @@ public class Main {
             userChildTickets = getValidInput(scnr, "Enter child tickets: ", 0, Integer.MAX_VALUE);
             userSeniorTickets = getValidInput(scnr, "Enter senior tickets: ", 0, Integer.MAX_VALUE);
 
+            if(isAvailable(userRow, userAdultTickets, userChildTickets, userSeniorTickets, auditorium, userCharLet)){
+                exit();
+            }
+            else{
+                System.out.println("The seats are not available"); // placeholder
+            }
+
         }
-            System.out.println(userRow + " " + userCharLet + " " + userAdultTickets+ " " + userChildTickets + " " + userSeniorTickets); // For testing purposes
+            //System.out.println(userRow + " " + userCharLet + " " + userAdultTickets+ " " + userChildTickets + " " + userSeniorTickets); // For testing purposes
             
             scnr.close();
     }
