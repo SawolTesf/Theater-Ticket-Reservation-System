@@ -16,8 +16,8 @@ public class Main {
     }
 
     // Outputs the auditorium to the console
-    public static void outputAuditorium(int rows, int colums, char[][] auditorium, String colLetter){
-        System.out.println("  " + colLetter);
+    public static void outputAuditorium(int rows, int colums, char[][] auditorium, String newColLetter){
+        System.out.println("  " + newColLetter);
 
         for(int i = 0; i < rows; i++){
             System.out.print(i+1 + " ");
@@ -43,14 +43,15 @@ public class Main {
         return -1; // This line should never be reached
     }
 
-    public static boolean isAvailable(int userRow, int userAdultTickets, int userChildTickets, int userSeniorTickets, char[][] auditorium, char userCharLet){
-        int startSeat = userCharLet - 'A';
+    public static boolean isAvailable(int userRow, int userAdultTickets, int userChildTickets, int userSeniorTickets, char[][] auditorium, char userCharLet, String newColString){
+        int startSeat = newColString.indexOf(userCharLet);
         int endSeat = startSeat + userAdultTickets + userChildTickets + userSeniorTickets;
 
         for(int i = startSeat; i < endSeat; i++){
-            if(auditorium[userRow][i] != '.'){
+            if(auditorium[userRow][i] ==  '#'){
                 return false;
             }
+            
         }
         return true; // If the seats are available
 
@@ -60,6 +61,38 @@ public class Main {
         System.out.println("Thank you for using the program"); // placeholder
         System.exit(0);
     }
+    
+    public static int[] getBestAvailable(int userRow, int totalTickets, char[][] auditorium){
+        int[] bestSeats = new int[2]; // This will hold the start and end of the best available seats
+        int maxCount = 0; // This will hold the maximum count of sequential available seats
+        int count = 0; // This will hold the current count of sequential available seats
+        int center = auditorium[0].length / 2; // This is the center of the row
+        int bestDistance = auditorium[0].length; // This will hold the smallest distance from center
+    
+        for(int i = 0; i < auditorium[userRow].length; i++){
+            if(auditorium[userRow][i] == '.'){
+                count++;
+                if(count >= totalTickets){
+                    int distance = Math.abs(center - (i - count / 2)); // Distance from center to middle of sequence
+                    if(distance < bestDistance || (distance == bestDistance && count > maxCount)){
+                        bestDistance = distance;
+                        maxCount = count;
+                        bestSeats[0] = i - count + 1;
+                        bestSeats[1] = i - count + totalTickets;
+                    }
+                }
+            } else {
+                count = 0;
+            }
+        }
+    
+        if(maxCount >= totalTickets){
+            return bestSeats;
+        } else {
+            return null; // Return null if no suitable seats found
+        }
+    }
+    
     
 
     public static void main(String[] args) {
@@ -111,22 +144,26 @@ public class Main {
             System.exit(0); // Exit the program
         }
 
-        colLetter = colLetter.substring(0, col); 
+        String newColLetter = colLetter.substring(0, col); 
 
         boolean valid = false;
+
+        char[][] updatedAuditorium = new char[row][col];
+
         while(choice != 2){
             menu();
             choice = scnr.nextInt();
-            if(choice == 2) exit();
-            outputAuditorium(row, col, auditorium, colLetter);
+            if(choice == 2) break;
+            outputAuditorium(row, col, auditorium, newColLetter);
             
             userRow = getValidInput(scnr, "Enter row: ", 1, row); // Get the row number
+            userRow -= 1; // Decrement the row number by 1 to match the index of the array
 
             // Get the seat letter
             while(!valid){
                 System.out.print("Enter seat: ");
                 userCharLet = Character.toUpperCase(scnr.next().charAt(0));
-                if(userCharLet >= 'A' && userCharLet <= colLetter.charAt(col - 1)){ // col-1 because the colLetter string is one less than the actual number of columns
+                if(userCharLet >= 'A' && userCharLet <= newColLetter.charAt(col - 1)){ // col-1 because the newColLetter string is one less than the actual number of columns
                     valid = true;
                 }
             }
@@ -137,15 +174,58 @@ public class Main {
             userChildTickets = getValidInput(scnr, "Enter child tickets: ", 0, Integer.MAX_VALUE);
             userSeniorTickets = getValidInput(scnr, "Enter senior tickets: ", 0, Integer.MAX_VALUE);
 
-            if(isAvailable(userRow, userAdultTickets, userChildTickets, userSeniorTickets, auditorium, userCharLet)){
+            if(isAvailable(userRow, userAdultTickets, userChildTickets, userSeniorTickets, auditorium, userCharLet, newColLetter)){
                 exit();
             }
             else{
-                System.out.println("The seats are not available"); // placeholder
+                int[] bestSeats = getBestAvailable(userRow, userAdultTickets + userChildTickets + userSeniorTickets, auditorium);
+                
+                if(bestSeats != null){
+                    char startingSeatLetter = (char)('A' + bestSeats[0]); // Convert the starting seat number to a letter
+                    char endingSeatLetter = (char)('A' + bestSeats[1]); // Convert the ending seat number to a letter
+
+                    System.out.println("Best available seats: " + (userRow + 1) + startingSeatLetter + " - " + (userRow + 1) + endingSeatLetter);
+                    System.out.println("Reserve seats? (Y/N)");
+                    char response = Character.toUpperCase(scnr.next().charAt(0));
+
+                    if(response == 'Y'){
+                        int startSeat = bestSeats[0];
+                        int endSeat = bestSeats[1];
+
+                        for (int i = startSeat; i < startSeat + userAdultTickets; i++) {
+                            auditorium[userRow][i] = '#';
+                            updatedAuditorium[userRow][i] = 'A';
+                        }
+                        for (int i = startSeat + userAdultTickets; i < startSeat + userAdultTickets + userChildTickets; i++) {
+                            auditorium[userRow][i] = '#';
+                            updatedAuditorium[userRow][i] = 'C';
+                        }
+                        for (int i = startSeat + userAdultTickets + userChildTickets; i <= endSeat; i++) {
+                            auditorium[userRow][i] = '#';
+                            updatedAuditorium[userRow][i] = 'S';
+                        }
+                    }
+                    else{
+                        System.out.println("no seats available");
+                    }
+                }
             }
 
         }
-            //System.out.println(userRow + " " + userCharLet + " " + userAdultTickets+ " " + userChildTickets + " " + userSeniorTickets); // For testing purposes
+        try{
+            PrintStream out = new PrintStream(new File("A1.txt"));
+            for(int i = 0; i < row; i++){
+                for(int j = 0; j < col; j++){
+                    out.print(updatedAuditorium[i][j]);
+                }
+                out.println();
+            }
+            out.close();
+        }
+        catch(FileNotFoundException e){
+            System.out.println("Error writing to file");
+            System.exit(0); // Exit the program
+        }
             
             scnr.close();
     }
