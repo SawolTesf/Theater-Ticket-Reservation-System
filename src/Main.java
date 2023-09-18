@@ -29,6 +29,21 @@ public class Main {
         System.out.println();
     }
 
+    public static int getValidInput(Scanner scnr, String prompt, int minValue, int maxValue) {
+        int userInput;
+        boolean valid = false;
+        while (!valid) {
+            System.out.print(prompt);
+            userInput = scnr.nextInt();
+            if (userInput >= minValue && userInput <= maxValue) {
+                valid = true;
+                return userInput;
+            }
+        }
+        return -1; // This line should never be reached
+    }
+    
+
     public static void main(String[] args) {
 
         char[][] auditorium = new char[10][26]; // Declare and Initialize the auditorium 2d array to the max size
@@ -36,10 +51,12 @@ public class Main {
         Scanner scnr = new Scanner(System.in);
 
         // Declare and initialize variables to 0
-        int col = 0, row = 0, adultTickets = 0, childTickets = 0, seniorTickets = 0, choice = 0;
+        int col = 0, row = 0, totAdultTickets = 0, totchildTickets = 0, totSeniorTickets = 0, choice = 0, userAdultTickets = 0, userChildTickets = 0, userSeniorTickets = 0, userRow = 0;
         Double Sales = 0.0;
 
         String colLetter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        char userCharLet = 'A';
 
         System.out.print("Enter file name: ");
         String fileName = scnr.next();
@@ -55,9 +72,9 @@ public class Main {
 
                 for(col = 0; col < line.length(); col++){
                     if(line.charAt(col) != '.'){
-                        if(line.charAt(col) == 'A') adultTickets++;
-                        else if(line.charAt(col) == 'C') childTickets++;
-                        else if(line.charAt(col) == 'S') seniorTickets++;
+                        if(line.charAt(col) == 'A') totAdultTickets++;
+                        else if(line.charAt(col) == 'C') totchildTickets++;
+                        else if(line.charAt(col) == 'S') totSeniorTickets++;
 
                         auditorium[row][col] = '#';
                     }
@@ -76,16 +93,35 @@ public class Main {
             System.exit(0); // Exit the program
         }
 
-        colLetter = colLetter.substring(0, col); // Change the colLetter to the correct amount of letters
+        colLetter = colLetter.substring(0, col); 
 
+        boolean valid = false;
         while(choice != 2){
             menu();
             choice = scnr.nextInt();
             if(choice == 2) continue;
             outputAuditorium(row, col, auditorium, colLetter);
+            
+            userRow = getValidInput(scnr, "Enter row: ", 1, row); // Get the row number
+
+            // Get the seat letter
+            while(!valid){
+                System.out.print("Enter seat: ");
+                userCharLet = Character.toUpperCase(scnr.next().charAt(0));
+                if(userCharLet >= 'A' && userCharLet <= colLetter.charAt(col - 1)){ // col-1 because the colLetter string is one less than the actual number of columns
+                    valid = true;
+                }
+            }
+            valid = false;
+
+            // Get the number of tickets for each type of ticket
+            userAdultTickets = getValidInput(scnr, "Enter adult tickets: ", 0, Integer.MAX_VALUE);
+            userChildTickets = getValidInput(scnr, "Enter child tickets: ", 0, Integer.MAX_VALUE);
+            userSeniorTickets = getValidInput(scnr, "Enter senior tickets: ", 0, Integer.MAX_VALUE);
 
         }
-
-        scnr.close();
+            System.out.println(userRow + " " + userCharLet + " " + userAdultTickets+ " " + userChildTickets + " " + userSeniorTickets); // For testing purposes
+            
+            scnr.close();
     }
 }
