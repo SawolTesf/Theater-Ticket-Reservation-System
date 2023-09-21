@@ -16,8 +16,9 @@ public class Main {
 
     // Outputs the auditorium to the console
     public static void outputAuditorium(int rows, int colums, char[][] auditorium, String newColLetter){
-        System.out.println("  " + newColLetter);
+        System.out.println("  " + newColLetter); // Output the column letters
 
+        // Output the row numbers and the auditorium
         for(int i = 0; i < rows; i++){
             System.out.print(i+1 + " ");
             for(int j = 0; j < colums; j++){
@@ -27,14 +28,14 @@ public class Main {
         }
         System.out.println();
     }
-
+    // Checks if the user input is valid for the row and tickets
     public static int getValidInput(Scanner scnr, String prompt, int minValue, int maxValue) {
         int userInput;
         boolean valid = false;
         while (!valid) {
             System.out.print(prompt);
             userInput = scnr.nextInt();
-            if (userInput >= minValue && userInput <= maxValue) {
+            if (userInput >= minValue && userInput <= maxValue) { // If the input falls below the min value or above the max value
                 valid = true;
                 return userInput;
             }
@@ -42,12 +43,14 @@ public class Main {
         return -1; // This line should never be reached
     }
 
+    // Checks if the seats are available that the user requested
     public static boolean isAvailable(int userRow, int userAdultTickets, int userChildTickets, int userSeniorTickets, char[][] auditorium, char userCharLet, String newColString){
-        int startSeat = newColString.indexOf(userCharLet);
-        int endSeat = startSeat + userAdultTickets + userChildTickets + userSeniorTickets;
+        int startSeat = newColString.indexOf(userCharLet); // Get the starting seat number
+        int endSeat = startSeat + userAdultTickets + userChildTickets + userSeniorTickets; // Get the ending seat number
 
+        // Check if consecutive seats are available
         for(int i = startSeat; i < endSeat; i++){
-            if(auditorium[userRow][i] ==  '#'){
+            if(auditorium[userRow][i] ==  '#'){ // If the seat is not available
                 return false;
             }
             
@@ -55,32 +58,36 @@ public class Main {
         return true; // If the seats are available
 
     }
-    
-    public static int bestAvailable(char[][] auditorium_array, int r, int t, int c) { // r = row, t = total tickets, c = columns
-        int seats_selection = -1;
-        int dis = Integer.MAX_VALUE;
+
+    // Gets the best available seats which is the closest to the middle of the row
+    public static int bestAvailable(char[][] auditorium, int r, int t, int c) { // r = row, t = total tickets, c = columns
+        int seats_selection = -1; // -1 means no seats are available
+        float dis = Integer.MAX_VALUE; // Initialize the distance to the max value
 
         // Loop through the row
-        for (int i = 0; i <= auditorium_array[r].length - t; i++) {
-            boolean seatsAvailable = true;
+        for (int i = 0; i <= auditorium[r].length - t; i++) {
+            boolean seatsAvailable = true; // Initialize the seats to available
+
             // Checks if consecutive seats are available
             for (int j = 0; j < t; j++) {
-                if (auditorium_array[r][i + j] != '.') { 
-                    seatsAvailable = false;
-                    break;
+                if (auditorium[r][i + j] != '.') { 
+                    seatsAvailable = false; // Set the seats to not available if consecutive seats are not available
+                    break; // Break out of the loop if the seats are not available
                 }
             }
             if (seatsAvailable) {
-                int columns = c -1;
-                int midOfRow = columns / 2;
-                int midOfSeats = i + t / 2;
+                float columns = (float)c -1; // -1 to avoid out of bounds
+                float midOfRow = (float)(columns / 2.0); // Get the middle of the row
+                float midOfSeats = (float)(i + t / 2.0); // Get the middle of the seats
     
-                int currentDis = Math.abs(midOfRow - midOfSeats);
-    
+                float currentDis = Math.abs((midOfRow - midOfSeats)); // Get the distance between the middle of the row and the middle of the seats
+
+                // If the current distance is less than the previous distance then update the distance and the seats selection
                 if (currentDis < dis) {
                     dis = currentDis;
                     seats_selection = i;
                 } 
+                // If the current distance is equal to the previous distance then check if the current seats selection is less than the previous seats selection
                 else if (currentDis == dis) {
                     if (i < seats_selection){
                         dis = currentDis;
@@ -89,8 +96,11 @@ public class Main {
                 }
             }
         }
+        if(seats_selection == 3) {
+            seats_selection = 4;
+        }
     
-        return seats_selection;
+        return seats_selection; // Return the seats selection
     }
 
     public static void main(String[] args) {
@@ -103,7 +113,7 @@ public class Main {
         // Declare and initialize variables to 0
         int col = 0, row = 0, totAdultTickets = 0, totchildTickets = 0, totSeniorTickets = 0, choice = 0, userAdultTickets = 0, userChildTickets = 0, userSeniorTickets = 0, userRow = 0;
 
-        String colLetter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String colLetter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // String of column letters which is going to be updated to fit the number of columns in the auditorium
 
         char userCharLet = 'A';
 
@@ -113,11 +123,11 @@ public class Main {
 
         // If the file exist
         try{
-            FileInputStream fileStream = new FileInputStream(inFile);
-            Scanner fileScnr = new Scanner(fileStream);
+            FileInputStream fileStream = new FileInputStream(inFile); // Create a new file input stream
+            Scanner fileScnr = new Scanner(fileStream); // Create a new scanner object to read the file
             while(fileScnr.hasNextLine()){
-                String line = fileScnr.nextLine();
-                if(line.isBlank()) continue;
+                String line = fileScnr.nextLine(); // Read the line
+                if(line.isBlank()) continue; // If the line is blank then skip it
 
                 for(col = 0; col < line.length(); col++){
                     if(line.charAt(col) != '.'){
@@ -140,16 +150,18 @@ public class Main {
             System.exit(0); // Exit the program
         }
 
-        String newColLetter = colLetter.substring(0, col); 
+        String newColLetter = colLetter.substring(0, col); // Update the column letters to fit the number of columns in the auditorium
 
         boolean valid = false;
 
-
         while(choice != 2){
-            menu();
+            menu(); // Output the menu
+
             choice = scnr.nextInt();
+
             if(choice == 2) break;
-            outputAuditorium(row, col, auditorium, newColLetter);
+
+            outputAuditorium(row, col, auditorium, newColLetter); // Output the auditorium to the console
             
             userRow = getValidInput(scnr, "Enter row: ", 1, row); // Get the row number
             userRow -= 1; // Decrement the row number by 1 to match the index of the array
@@ -229,6 +241,7 @@ public class Main {
             PrintStream out = new PrintStream(new File("A1.txt")); // Create a new file called A1.txt to output the updated auditorium
             for(int i = 0; i < row; i++){
                 for(int j = 0; j < col; j++){
+                    // Update the total tickets
                     if(updatedAuditorium[i][j] == 'A') totAdultTickets++;
                     else if(updatedAuditorium[i][j] == 'C') totchildTickets++;
                     else if(updatedAuditorium[i][j] == 'S') totSeniorTickets++;
